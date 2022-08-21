@@ -1,0 +1,41 @@
+version: "3.8"
+services:
+  app:
+    image: carlosngv/carsapp
+    container_name: app
+    stdin_open: true
+    environment:
+      SERVER_URI: "http://localhost:9000"
+    depends_on:
+      - goserver
+    ports:
+      - 3000:3000
+    networks:
+      - cars-app
+  goserver:
+    image: carlosngv/goapp
+    container_name: goserver
+    environment:
+      MONGO_URI: "mongodb://db:27017"
+    depends_on:
+      - db
+    ports:
+      - 9000:9000
+    networks:
+      - cars-app
+  db:
+    image : mongo
+    container_name: db
+    environment:
+    - PUID=1000
+    - PGID=1000
+    volumes:
+    - /Users/carlosngv/Documents/U/SO1/Practica 1/db_data:/data/db
+    ports:
+    - 27017:27017
+    networks:
+      - cars-app
+    restart: unless-stopped
+networks:
+  cars-app:
+    driver: bridge
