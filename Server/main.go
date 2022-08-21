@@ -2,8 +2,10 @@ package main
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/rs/cors"
 	"gopkg.in/mgo.v2"
 
 	"practica1/controllers"
@@ -15,18 +17,19 @@ func main() {
 
 	uc := controllers.NewCarController(getSession())
 
-	r.GET("/car/:id", uc.GetCar)
-	r.POST("/car", uc.CreateCar)
-	r.DELETE("/car/:id", uc.DeleteCar )
-	r.PUT("/car/:id", uc.UpdateCar )
-
-	http.ListenAndServe("localhost:9000", r)
+	r.GET("/cars/delete/:carId", uc.DeleteCar )
+	r.GET("/cars/car/:carId", uc.GetCar)
+	r.GET("/cars", uc.GetAllCars)
+	r.POST("/cars", uc.CreateCar)
+	r.POST("/cars/:id", uc.UpdateCar )
+	handler := cors.Default().Handler(r)
+	http.ListenAndServe(":9000", handler)
 
 }
 
 func getSession() *mgo.Session {
 	// Mongo DB connection
-	s, err := mgo.Dial("mongodb://localhost:27017")
+	s, err := mgo.Dial(os.Getenv("MONGO_URI"))
 	if err != nil {
 		panic(err)
 	}
