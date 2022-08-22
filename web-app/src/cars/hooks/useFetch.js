@@ -13,7 +13,6 @@ export const useFetch = ( url, method = 'GET', body = {} ) => {
             isLoading: true,
         });
 
-        console.log(url);
 
         const resp = await fetch(url);
         const data = await resp.json();

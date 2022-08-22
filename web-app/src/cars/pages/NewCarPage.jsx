@@ -4,7 +4,7 @@ import { useForm } from '../../ui/hooks/useForm'
 
 export const NewCarPage = () => {
 
-  // const url = `${import.meta.env.SERVER_URI}/cars/`;
+  // const url = `http://localhost:9001/cars/`;
   const url = `${process.env.SERVER_URI}/cars/`;
 
   const navigate = useNavigate();
@@ -13,7 +13,6 @@ export const NewCarPage = () => {
 
     e.preventDefault();
 
-    console.log(form);
 
     const requestOptions = {
       method: 'POST',
@@ -23,7 +22,6 @@ export const NewCarPage = () => {
 
     let resp = await fetch( url, requestOptions );
     let data = await resp.json();
-    console.log(data);
 
     onResetForm();
     navigate(-1);

@@ -6,6 +6,7 @@ export const UpdateCarPage = () => {
 
    const { id } = useParams();
 
+  //  const url = `http://localhost:9001/cars/`;
    const url = `${process.env.SERVER_URI}/cars/`;
   const {
       brand,
@@ -55,11 +56,11 @@ export const UpdateCarPage = () => {
       body: JSON.stringify( form ),
     };
 
-    console.log(form)
 
-    let resp = await fetch( url, requestOptions );
+
+    let resp = await fetch( url + "update/" + id, requestOptions );
     let data = await resp.json();
-    console.log(data);
+
 
     onResetForm();
     navigate(-1);

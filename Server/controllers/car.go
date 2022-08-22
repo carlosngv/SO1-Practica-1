@@ -33,6 +33,25 @@ func (uc CarController) GetAllCars(w http.ResponseWriter, r *http.Request, _ htt
 	json, _ := json.Marshal(cars)
 	fmt.Fprintf(w, "%s\n", json)
 }
+func (uc CarController) GetFilteredCars(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	enableCors(&w)
+	var cars []bson.M
+
+	u := models.Filter{}
+
+	json.NewDecoder(r.Body).Decode(&u)
+
+	if err := uc.session.DB("so1p1").C("cars").Find(bson.M{u.FilterType: u.Value}).All(&cars); err != nil {
+		fmt.Printf("fitler fail %v\n", err)
+		w.WriteHeader(404)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json, _ := json.Marshal(cars)
+	fmt.Fprintf(w, "%s\n", json)
+}
 
 func (uc CarController) GetCar(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	enableCors(&w)
@@ -109,11 +128,13 @@ func (uc CarController) UpdateCar(w http.ResponseWriter, r *http.Request, p http
 
 	enableCors(&w)
 
-	id := p.ByName("id")
+	id := p.ByName("carId")
 
 	newCar := models.Car{}
 
 	json.NewDecoder(r.Body).Decode(&newCar)
+
+	fmt.Printf("update id %v\n", newCar.Brand)
 
 	if !bson.IsObjectIdHex(id) {
 		w.WriteHeader(http.StatusNotFound)
@@ -121,13 +142,24 @@ func (uc CarController) UpdateCar(w http.ResponseWriter, r *http.Request, p http
 
 	oid := bson.ObjectIdHex(id)
 
-
-	if err := uc.session.DB("so1p1").C("cars").Update(bson.M{"_id": oid}, newCar); err != nil {
-		fmt.Printf("update fail %v\n", err)
+	// Deletes car
+	if err := uc.session.DB("so1p1").C("cars").RemoveId(oid); err != nil {
 		w.WriteHeader(404)
-		uc.generateLog(fmt.Sprintf("Error, car with ID: %v doesn't exist.", id))
-		return
 	}
+
+	// Creates car
+
+	newCar.Id = bson.NewObjectId()
+	uc.session.DB("so1p1").C("cars").Insert(newCar)
+
+
+
+	// if err := uc.session.DB("so1p1").C("cars").Update(bson.M{"_id": oid}, newCar); err != nil {
+	// 	fmt.Printf("update fail %v\n", err)
+	// 	w.WriteHeader(404)
+	// 	uc.generateLog(fmt.Sprintf("Error, car with ID: %v doesn't exist.", id))
+	// 	return
+	// }
 
 	uj, err := json.Marshal(newCar)
 
